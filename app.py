@@ -1,4 +1,4 @@
-#import numpy as np
+import numpy as np
 import re
 import datetime as dt
 
@@ -49,24 +49,24 @@ def welcome():
     )
 
 
-@app.route("/api/v1.0/precipitation") #Convert query results to a dictionary using `date` as the key and `tobs` as the value
+@app.route("/api/v1.0/precipitation") #Convert the query results to a dictionary using date as the key and prcp as the value.
 def precipitation():
     # Create session (link) from Python to the DB
     session = Session(engine)
 
     # Query Measurement
-    results = (session.query(Measurement.date, Measurement.tobs)
+    results = (session.query(Measurement.date, Measurement.prcp)
                       .order_by(Measurement.date))
     
     # Create a dictionary
-    precipitation_date_tobs = []
+    precipitation_date = []
     for each_row in results:
         dt_dict = {}
         dt_dict["date"] = each_row.date
-        dt_dict["tobs"] = each_row.tobs
-        precipitation_date_tobs.append(dt_dict)
+        dt_dict["prcp"] = each_row.prcp
+        precipitation_date.append(dt_dict)
 
-    return jsonify(precipitation_date_tobs)
+    return jsonify(precipitation_date)
 
 
 @app.route("/api/v1.0/stations") #Return a JSON list of stations from the dataset
@@ -78,7 +78,13 @@ def stations():
     results = session.query(Station.name).all()
 
     # Convert list of tuples into normal list
-    station_details = list(np.ravel(results))
+    #station_details = list(np.ravel(results))
+    
+    station_details = []
+    for result in results:
+        line = {}
+        line["Station"] = result[0]
+        station_details.append(line)
 
     return jsonify(station_details)
 
